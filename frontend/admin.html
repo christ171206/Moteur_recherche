@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - SearchMine</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .admin-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background-color: #1a1a1a;
+            color: #fff;
+            padding: 2rem 1rem;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            margin-bottom: 2rem;
+            font-size: 1.3rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #444;
+        }
+
+        .nav-item {
+            padding: 0.75rem 1rem;
+            margin: 0.5rem 0;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .nav-item:hover {
+            background-color: #333;
+        }
+
+        .nav-item.active {
+            background-color: #4285f4;
+            font-weight: 600;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 2rem;
+            overflow-y: auto;
+            background-color: #fff;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        h1 {
+            margin-bottom: 2rem;
+            color: #1a1a1a;
+            border-bottom: 2px solid #4285f4;
+            padding-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #4285f4;
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+        }
+
+        .button {
+            padding: 0.75rem 1.5rem;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .button:hover {
+            background-color: #3367d6;
+        }
+
+        .button:active {
+            background-color: #1e50db;
+        }
+
+        .button.secondary {
+            background-color: #f5f5f5;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .button.secondary:hover {
+            background-color: #e8e8e8;
+        }
+
+        .button.danger {
+            background-color: #ea4335;
+        }
+
+        .button.danger:hover {
+            background-color: #d33425;
+        }
+
+        /* URL Input Array */
+        .urls-input {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .url-input-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .url-input-row input {
+            flex: 1;
+        }
+
+        .url-input-row button {
+            padding: 0.75rem 1rem;
+            background-color: #ea4335;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .url-input-row button:hover {
+            background-color: #d33425;
+        }
+
+        /* Status Box */
+        .status-box {
+            background-color: #f9f9f9;
+            border-left: 4px solid #4285f4;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        .status-box.success {
+            border-left-color: #34a853;
+            background-color: #f0f7f4;
+        }
+
+        .status-box.error {
+            border-left-color: #ea4335;
+            background-color: #fde7e6;
+        }
+
+        .status-box.info {
+            border-left-color: #4285f4;
+            background-color: #f1f4ff;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e8e8e8;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #4285f4;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* Table */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .table th,
+        .table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .table th {
+            background-color: #f5f5f5;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .table tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .badge.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .badge.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge.pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        /* Loading Spinner */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4285f4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .crawler-result {
+            background-color: #f9f9f9;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 4px;
+            border-left: 3px solid #4285f4;
+        }
+
+        .crawler-result.success {
+            border-left-color: #34a853;
+            background-color: #f0f7f4;
+        }
+
+        .crawler-result.error {
+            border-left-color: #ea4335;
+            background-color: #fde7e6;
+        }
+
+        .crawler-result-url {
+            font-weight: 500;
+            color: #1a1a1a;
+            word-break: break-all;
+        }
+
+        .crawler-result-title {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .admin-container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2>SearchMine Admin</h2>
+            <div class="nav-item active" data-page="crawler">🕷️ Crawler</div>
+            <div class="nav-item" data-page="documents">📄 Documents</div>
+            <div class="nav-item" data-page="statistics">📊 Statistiques</div>
+            <div class="nav-item" data-page="settings">⚙️ Paramètres</div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Crawler Page -->
+            <div id="crawler" class="page active">
+                <h1>🕷️ Web Crawler</h1>
+
+                <div class="form-group">
+                    <label>URLs à crawler:</label>
+                    <div class="urls-input" id="urlsInput">
+                        <div class="url-input-row">
+                            <input type="text" class="url-input" placeholder="https://example.com" value="">
+                            <button type="button" onclick="addUrlInput()">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="maxPages">Nombre max de pages:</label>
+                    <input type="number" id="maxPages" min="1" max="500" value="20">
+                </div>
+
+                <div class="form-group">
+                    <label for="delay">Délai entre requêtes (secondes):</label>
+                    <input type="number" id="delay" min="0.1" max="10" step="0.1" value="1.0">
+                </div>
+
+                <button class="button" onclick="startCrawler()">
+                    <span id="crawlBtnText">Démarrer le crawl</span>
+                </button>
+
+                <div id="crawlStatus"></div>
+
+                <h2 style="margin-top: 3rem; margin-bottom: 1rem;">Résultats du crawl:</h2>
+                <div id="crawlResults"></div>
+            </div>
+
+            <!-- Documents Page -->
+            <div id="documents" class="page">
+                <h1>📄 Documents Indexés</h1>
+
+                <button class="button" onclick="loadDocuments()">Rafraîchir</button>
+
+                <div id="documentsStatus"></div>
+
+                <table class="table" id="documentsTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Titre</th>
+                            <th>URL</th>
+                            <th>Catégorie</th>
+                            <th>Vues</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="documentsBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Statistics Page -->
+            <div id="statistics" class="page">
+                <h1>📊 Statistiques</h1>
+
+                <div id="statsContent"></div>
+                <button class="button" onclick="loadStatistics()">Rafraîchir</button>
+            </div>
+
+            <!-- Settings Page -->
+            <div id="settings" class="page">
+                <h1>⚙️ Paramètres</h1>
+
+                <div class="form-group">
+                    <label>API Backend URL:</label>
+                    <input type="text" id="apiUrl" value="http://localhost:5000/api">
+                    <small style="color: #666; margin-top: 0.5rem; display: block;">URL de base pour l'API</small>
+                </div>
+
+                <button class="button" onclick="testConnection()">
+                    Tester la connexion
+                </button>
+
+                <div id="connectionStatus"></div>
+
+                <h2 style="margin-top: 2rem; margin-bottom: 1rem;">Informations utiles:</h2>
+                <div class="status-box info">
+                    <strong>Frontend Google:</strong> <a href="google.html" target="_blank">google.html</a>
+                </div>
+                <div class="status-box info">
+                    <strong>Endpoint /api/search:</strong> Pour effectuer des recherches
+                </div>
+                <div class="status-box info">
+                    <strong>Endpoint /api/crawler/start:</strong> Pour lancer un crawl (POST JSON)
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = localStorage.getItem('apiUrl') || 'http://localhost:5000/api';
+
+        // Navigation entre pages
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const pageId = item.dataset.page;
+                
+                // Désactiver tous les items
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                
+                // Activer le selected
+                item.classList.add('active');
+                document.getElementById(pageId).classList.add('active');
+
+                // Charger les données si nécessaire
+                if (pageId === 'documents') loadDocuments();
+                if (pageId === 'statistics') loadStatistics();
+            });
+        });
+
+        // URL Input Management
+        function addUrlInput() {
+            const container = document.getElementById('urlsInput');
+            const row = document.createElement('div');
+            row.className = 'url-input-row';
+            row.innerHTML = `
+                <input type="text" class="url-input" placeholder="https://example.com">
+                <button type="button" onclick="removeUrlInput(this)">−</button>
+            `;
+            container.appendChild(row);
+        }
+
+        function removeUrlInput(btn) {
+            btn.parentElement.remove();
+        }
+
+        function getUrls() {
+            return Array.from(document.querySelectorAll('.url-input'))
+                .map(input => input.value.trim())
+                .filter(url => url.length > 0);
+        }
+
+        // Crawler Functions
+        async function startCrawler() {
+            const urls = getUrls();
+            const maxPages = parseInt(document.getElementById('maxPages').value);
+            const delay = parseFloat(document.getElementById('delay').value);
+
+            if (urls.length === 0) {
+                showStatus('crawlStatus', 'Veuillez entrer au moins une URL', 'error');
+                return;
+            }
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Crawling...';
+
+            showStatus('crawlStatus', 'Crawl en course...', 'info');
+            document.getElementById('crawlResults').innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_BASE}/crawler/start`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ urls, max_pages: maxPages, delay })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showStatus('crawlStatus', `Erreur: ${data.error}`, 'error');
+                } else {
+                    showStatus('crawlStatus', 
+                        `✓ Crawl terminé: ${data.pages_crawlees} pages crawlées, ${data.pages_indexees} indexées, ${data.erreurs} erreurs`,
+                        'success'
+                    );
+
+                    // Afficher les résultats
+                    displayCrawlResults(data);
+                }
+            } catch (error) {
+                showStatus('crawlStatus', `Erreur: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Démarrer le crawl';
+            }
+        }
+
+        function displayCrawlResults(data) {
+            const container = document.getElementById('crawlResults');
+            container.innerHTML = `
+                <div class="status-box info">
+                    <strong>Résumé:</strong>
+                    <div>Pages crawlées: ${data.pages_crawlees}</div>
+                    <div>Pages indexées: ${data.pages_indexees}</div>
+                    <div>Erreurs: ${data.erreurs}</div>
+                </div>
+            `;
+
+            if (data.details && data.details.length > 0) {
+                const detailsHtml = data.details.map(detail => {
+                    const className = detail.success ? 'success' : 'error';
+                    const icon = detail.success ? '✓' : '✗';
+                    const titleHtml = detail.titre ? `<div class="crawler-result-title">${detail.titre}</div>` : '';
+                    
+                    return `
+                        <div class="crawler-result ${className}">
+                            <div>${icon} <span class="crawler-result-url">${detail.url}</span></div>
+                            ${titleHtml}
+                            ${detail.erreur ? `<div class="crawler-result-title" style="color: #721c24;">Erreur: ${detail.erreur}</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+                container.innerHTML += `<div style="margin-top: 1rem;">${detailsHtml}</div>`;
+            }
+        }
+
+        // Documents Functions
+        async function loadDocuments() {
+            const statusDiv = document.getElementById('documentsStatus');
+            statusDiv.innerHTML = '<div class="status-box info"><span class="spinner"></span> Chargement...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/documents`);
+                const data = await response.json();
+
+                const table = document.getElementById('documentsTable');
+                const tbody = document.getElementById('documentsBody');
+
+                tbody.innerHTML = data.documents.map(doc => `
+                    <tr>
+                        <td>${doc.id}</td>
+                        <td><strong>${doc.titre}</strong></td>
+                        <td><a href="${doc.url}" target="_blank">${doc.url.substring(0, 40)}...</a></td>
+                        <td><span class="badge success">${doc.categorie}</span></td>
+                        <td>${doc.views_count || 0}</td>
+                        <td>
+                            <button class="button secondary" onclick="viewDocument(${doc.id})">Voir</button>
+                            <button class="button danger" onclick="deleteDocument(${doc.id})">Supprimer</button>
+                        </td>
+                    </tr>
+                `).join('');
+
+                statusDiv.innerHTML = `<div class="status-box success">✓ ${data.nb_documents} documents trouvés</div>`;
+                table.style.display = 'table';
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status-box error">Erreur: ${error.message}</div>`;
+            }
+        }
+
+        async function deleteDocument(id) {
+            if (!confirm('Êtes-vous sûr?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/documents/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    loadDocuments();
+                }
+            } catch (error) {
+                alert(`Erreur: ${error.message}`);
+            }
+        }
+
+        function viewDocument(id) {
+            window.open(`?docId=${id}`, '_blank');
+        }
+
+        // Statistics
+        async function loadStatistics() {
+            const container = document.getElementById('statsContent');
+            container.innerHTML = '<div class="status-box info"><span class="spinner"></span> Chargement...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/statistics`);
+                const data = await response.json();
+
+                container.innerHTML = `
+                    <div class="status-box success">
+                        <h3>Requêtes totales:</h3>
+                        <div style="font-size: 2rem; font-weight: bold;">${data.total_queries || 0}</div>
+                    </div>
+                    <div class="status-box info">
+                        <h3>Résultats moyens:</h3>
+                        <div style="font-size: 1.5rem; font-weight: bold;">${data.average_results || 0} par requête</div>
+                    </div>
+                    <div class="status-box info">
+                        <h3>Documents indexés:</h3>
+                        <div style="font-size: 1.5rem; font-weight: bold;">${data.total_documents || 0}</div>
+                    </div>
+                `;
+            } catch (error) {
+                container.innerHTML = `<div class="status-box error">Erreur: ${error.message}</div>`;
+            }
+        }
+
+        // Settings
+        async function testConnection() {
+            const apiUrl = document.getElementById('apiUrl').value;
+            localStorage.setItem('apiUrl', apiUrl);
+
+            const statusDiv = document.getElementById('connectionStatus');
+            statusDiv.innerHTML = '<div class="status-box info"><span class="spinner"></span> Test en cours...</div>';
+
+            try {
+                const response = await fetch(`${apiUrl}/health`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    statusDiv.innerHTML = `<div class="status-box success">✓ Connexion OK</div>`;
+                } else {
+                    statusDiv.innerHTML = `<div class="status-box error">✗ Erreur: ${data.error}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status-box error">✗ Impossible de se connecter: ${error.message}</div>`;
+            }
+        }
+
+        // Utility Functions
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status-box ${type}">${message}</div>`;
+        }
+    </script>
+</body>
+</html>
