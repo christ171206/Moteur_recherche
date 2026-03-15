@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - AXORA</title>
+    <link rel="stylesheet" href="google_style.css">
+    <style>
+        body { background-image: none; background-color: #f0f0f0; }
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-primary);
+            padding: 2rem;
+        }
+        .login-card {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+        }
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .login-logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+        .login-tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 4px 4px 0 0;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background: var(--accent-color);
+            color: black;
+            font-weight: bold;
+        }
+        .login-form {
+            display: none;
+        }
+        .login-form.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+        .form-submit-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--accent-color);
+            color: black;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .form-submit-btn:hover {
+            background: #3367d6;
+        }
+        .password-group {
+            position: relative;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: black;
+        }
+        .toggle-password.slashed {
+            text-decoration: line-through;
+        }
+        .form-footer {
+            text-align: center;
+            margin-top: 1rem;
+        }
+        .form-footer a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: black;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            color: var(--google-blue);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-page">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-logo" translate="no">
+                    <span class="letter a" style="color: #EA4335;">A</span><span class="letter x" style="color: #FBBC05;">X</span><span class="letter o" style="color: #34A853;">O</span><span class="letter r" style="color: #4285F4;">R</span><span class="letter a2" style="color: #EA4335;">A</span>
+                </div>
+            </div>
+            
+            <div class="login-tabs">
+                <button class="tab-btn active" id="signinTab">Se connecter</button>
+                <button class="tab-btn" id="signupTab">S'inscrire</button>
+            </div>
+            
+            <form class="login-form active" id="signinForm">
+                <div class="form-group">
+                    <input type="email" class="form-input" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <div class="password-group">
+                        <input type="password" class="form-input" id="signinPassword" placeholder="Mot de passe" required>
+                        <button type="button" class="toggle-password" data-target="signinPassword">👁️</button>
+                    </div>
+                </div>
+                <button type="submit" class="form-submit-btn">Se connecter</button>
+                <div class="form-footer">
+                    <a href="#" class="forgot-password">Mot de passe oublié ?</a>
+                </div>
+            </form>
+            
+            <form class="login-form" id="signupForm">
+                <div class="form-group">
+                    <input type="text" class="form-input" placeholder="Nom complet" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-input" placeholder="Email" required>
+                </div>
+                <div class="form-group">
+                    <div class="password-group">
+                        <input type="password" class="form-input" id="signupPassword" placeholder="Mot de passe" required>
+                        <button type="button" class="toggle-password" data-target="signupPassword">👁️</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="password-group">
+                        <input type="password" class="form-input" id="signupConfirmPassword" placeholder="Confirmer le mot de passe" required>
+                        <button type="button" class="toggle-password" data-target="signupConfirmPassword">👁️</button>
+                    </div>
+                </div>
+                <button type="submit" class="form-submit-btn">Créer un compte</button>
+            </form>
+            
+            <a href="google.html" class="back-link">← Retour à la recherche</a>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        const signinTab = document.getElementById('signinTab');
+        const signupTab = document.getElementById('signupTab');
+        const signinForm = document.getElementById('signinForm');
+        const signupForm = document.getElementById('signupForm');
+        
+        signinTab.addEventListener('click', () => {
+            signinTab.classList.add('active');
+            signupTab.classList.remove('active');
+            signinForm.classList.add('active');
+            signupForm.classList.remove('active');
+        });
+        
+        signupTab.addEventListener('click', () => {
+            signupTab.classList.add('active');
+            signinTab.classList.remove('active');
+            signupForm.classList.add('active');
+            signinForm.classList.remove('active');
+        });
+        
+        // Form submissions
+        signinForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            // Simulate login
+            localStorage.setItem('loggedIn', 'true');
+            alert('Connexion réussie !');
+            window.location.href = 'google.html';
+        });
+        
+        signupForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const password = signupForm.querySelectorAll('.form-input')[2].value;
+            const confirmPassword = signupForm.querySelectorAll('.form-input')[3].value;
+            
+            if (password !== confirmPassword) {
+                alert('Les mots de passe ne correspondent pas !');
+                return;
+            }
+            
+            // Simulate signup
+            localStorage.setItem('loggedIn', 'true');
+            alert('Inscription réussie !');
+            window.location.href = 'google.html';
+        });
+        
+        // Password toggle
+        document.querySelectorAll('.toggle-password').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.getAttribute('data-target');
+                const input = document.getElementById(targetId);
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    btn.classList.remove('slashed');
+                } else {
+                    input.type = 'password';
+                    btn.classList.add('slashed');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

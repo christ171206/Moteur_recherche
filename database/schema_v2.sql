@@ -25,6 +25,7 @@ CREATE TABLE documents (
     vue INT DEFAULT 0,
     pertinence_score FLOAT DEFAULT 0,
     active BOOLEAN DEFAULT TRUE,
+    metadata JSON,
     
     -- Indexes pour performance
     INDEX idx_categorie (categorie),

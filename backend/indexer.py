@@ -56,10 +56,13 @@ class Indexer:
                     })
                     continue
                 
-                # Extraire le domaine comme catégorie
+                # Utiliser la catégorie du crawler ou extraire du domaine
                 from urllib.parse import urlparse
                 domain = urlparse(url).netloc
-                categorie = domain.replace('www.', '')
+                categorie = page.get('categorie', domain.replace('www.', ''))
+                
+                # Récupérer les métadonnées
+                metadata = page.get('metadata', {})
                 
                 # Ajouter à la BD
                 doc_id = DatabaseService.add_document(
@@ -70,7 +73,8 @@ class Indexer:
                     tags='crawler,indexe,web',
                     auteur='WebCrawler',
                     url=url,
-                    date_publication=datetime.now().date().isoformat()
+                    date_publication=datetime.now().date().isoformat(),
+                    metadata=metadata
                 )
                 
                 stats['reussis'] += 1

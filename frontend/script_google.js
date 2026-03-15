@@ -1,8 +1,22 @@
 // Google-style Search Engine JavaScript
 
+// ===== BACKGROUND IMAGE ROTATION =====
+const backgroundImages = ['moteur2.jpg'];
+let currentImageIndex = 0;
+
+function rotateBackground() {
+    currentImageIndex = (currentImageIndex + 1) % backgroundImages.length;
+    document.documentElement.style.backgroundImage = `url('./${backgroundImages[currentImageIndex]}')`;
+}
+
+// Change background every 10 seconds (10000 milliseconds)
+setInterval(rotateBackground, 10000);
+// =====================================
+
 const API_BASE = 'http://localhost:5000/api';
 let currentPage = 1;
 let currentQuery = '';
+let currentCategory = ''; // web / images / videos / news etc
 let allResults = [];
 
 // Elements
@@ -20,9 +34,11 @@ function init() {
     // Check if we're on results page
     const params = new URLSearchParams(window.location.search);
     const query = params.get('q');
+    const category = params.get('categorie') || '';
+    currentCategory = category;
     
     if (query) {
-        showResultsPage(query);
+        showResultsPage(query, category);
     } else {
         showHomePage();
     }
@@ -30,18 +46,17 @@ function init() {
 
 // Show home page (search hero)
 function showHomePage() {
+
     document.querySelector('.google-container').innerHTML = `
         <div class="google-header">
-            <div class="logo">
-                <span class="letter s">S</span><span class="letter e">e</span><span class="letter a">a</span>
-                <span class="letter r">r</span><span class="letter c">c</span><span class="letter h">h</span>
-                <span class="letter m">M</span><span class="letter i">i</span><span class="letter n">n</span>
-                <span class="letter e">e</span>
+            <div class="logo" translate="no">
+                <span class="letter a" style="color: #EA4335;">A</span><span class="letter x" style="color: #FBBC05;">X</span><span class="letter o" style="color: #34A853;">O</span><span class="letter r" style="color: #4285F4;">R</span><span class="letter a2" style="color: #EA4335;">A</span>
             </div>
             <div class="google-nav">
-                <a href="#about">About</a>
-                <a href="#advanced">Advanced Search</a>
-                <a href="#settings">Settings</a>
+                <a href="about.html">À propos</a>
+                <a href="advanced.html">Recherche avancée</a>
+                <a href="settings.html">Paramètres</a>
+                <button class="login-btn" id="loginBtn" type="button">Se connecter</button>
             </div>
         </div>
         <div class="search-hero">
@@ -55,19 +70,52 @@ function showHomePage() {
                         <input 
                             type="text" 
                             id="homeSearchInput" 
-                            placeholder="Search the web"
+                            placeholder="Rechercher sur le web"
                             autocomplete="off"
                         >
+                        <button type="button" class="voice-search-btn" id="voiceSearchBtn" title="Search by voice">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 1a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4z"/>
+                                <path d="M19 10v1a7 7 0 0 1-14 0v-1"/>
+                                <line x1="12" y1="19" x2="12" y2="23"/>
+                                <line x1="8" y1="23" x2="16" y2="23"/>
+                            </svg>
+                        </button>
+                        <button type="button" class="image-search-btn" id="imageSearchBtn" title="Search by image">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="9" cy="9" r="2"/>
+                                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                            </svg>
+                        </button>
+                        <input type="file" id="imageUpload" accept="image/*" style="display: none;">
                     </div>
                     <div id="homeAutocomplete" class="autocomplete-list"></div>
                 </div>
                 <div class="search-buttons">
-                    <button type="submit" class="btn-search">Search</button>
-                    <button type="button" class="btn-lucky">I'm Feeling Lucky</button>
+                    <button type="submit" class="btn-search">Rechercher</button>
+                    <button type="button" class="btn-lucky">J'ai de la chance</button>
                 </div>
             </form>
+            
         </div>
     `;
+
+    // Set up login button
+    const isLoggedIn = localStorage.getItem('loggedIn') === 'true';
+    const loginBtn = document.getElementById('loginBtn');
+    if (isLoggedIn) {
+        loginBtn.textContent = 'Se déconnecter';
+        loginBtn.addEventListener('click', () => {
+            localStorage.removeItem('loggedIn');
+            location.reload();
+        });
+    } else {
+        loginBtn.textContent = 'Se connecter';
+        loginBtn.addEventListener('click', () => {
+            window.location.href = 'login.html';
+        });
+    }
 
     const homeSearchForm = document.getElementById('homeSearchForm');
     const homeSearchInput = document.getElementById('homeSearchInput');
@@ -103,16 +151,121 @@ function showHomePage() {
             homeAutocomplete.classList.remove('show');
         }
     });
+
+    // Initialize voice and image search
+    initVoiceSearch();
+    initImageSearch();
 }
 
+// ===== VOICE SEARCH FUNCTIONALITY =====
+function initVoiceSearch() {
+    const voiceBtn = document.getElementById('voiceSearchBtn');
+    const searchInput = document.getElementById('homeSearchInput');
+    
+    if (!voiceBtn) return;
+    
+    // Check if browser supports speech recognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+        voiceBtn.style.display = 'none';
+        return;
+    }
+    
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'fr-FR'; // French language
+    
+    let isListening = false;
+    
+    voiceBtn.addEventListener('click', () => {
+        if (isListening) {
+            recognition.stop();
+            return;
+        }
+        
+        recognition.start();
+        isListening = true;
+        voiceBtn.classList.add('listening');
+        voiceBtn.title = 'Cliquez pour arrêter';
+    });
+    
+    recognition.onstart = () => {
+        console.log('Voice recognition started');
+    };
+    
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        searchInput.value = transcript;
+        searchInput.focus();
+    };
+    
+    recognition.onend = () => {
+        isListening = false;
+        voiceBtn.classList.remove('listening');
+        voiceBtn.title = 'Recherche vocale';
+    };
+    
+    recognition.onerror = (event) => {
+        console.error('Voice recognition error:', event.error);
+        isListening = false;
+        voiceBtn.classList.remove('listening');
+    };
+}
+
+// ===== IMAGE SEARCH FUNCTIONALITY =====
+function initImageSearch() {
+    const imageBtn = document.getElementById('imageSearchBtn');
+    const imageUpload = document.getElementById('imageUpload');
+    const searchInput = document.getElementById('homeSearchInput');
+    
+    if (!imageBtn || !imageUpload) return;
+    
+    imageBtn.addEventListener('click', () => {
+        imageUpload.click();
+    });
+    
+    imageUpload.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            // For now, just show the filename in the search box
+            // In a real implementation, you would upload the image and get search results
+            searchInput.value = `Recherche par image: ${file.name}`;
+            searchInput.focus();
+            
+            // Here you would typically:
+            // 1. Upload the image to your server
+            // 2. Process it with image recognition
+            // 3. Get search results based on the image content
+            console.log('Image selected for search:', file.name);
+        }
+    });
+}
+
+// Initialize all new features when DOM is loaded
+// document.addEventListener('DOMContentLoaded', () => {
+//     initVoiceSearch();
+//     initImageSearch();
+// });
+
 // Show results page
-function showResultsPage(query) {
+function showResultsPage(query, category = '') {
     currentQuery = query;
+    currentCategory = category || '';
     document.querySelector('.google-container').innerHTML = `
         <div class="results-page">
             <!-- Header -->
             <div class="results-header">
-                <div class="results-logo">SearchMine</div>
+                <div class="results-logo" translate="no">
+                    <span class="letter a" style="color: #EA4335;">A</span><span class="letter x" style="color: #FBBC05;">X</span><span class="letter o" style="color: #34A853;">O</span><span class="letter r" style="color: #4285F4;">R</span><span class="letter a2" style="color: #EA4335;">A</span>
+                </div>
+                <div class="google-nav">
+                    <a href="about.html">À propos</a>
+                    <a href="advanced.html">Recherche avancée</a>
+                    <a href="settings.html">Paramètres</a>
+                    <button class="login-btn" id="resultsLoginBtn" type="button">Se connecter</button>
+                </div>
                 <div class="results-search-box">
                     <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="11" cy="11" r="8"></circle>
@@ -122,16 +275,20 @@ function showResultsPage(query) {
                         type="text" 
                         id="resultsSearchInput" 
                         value="${escapeHtml(query)}"
-                        placeholder="Search"
+                        placeholder="Recherche"
                     >
-                    <button type="button" id="resultsSearchBtn">Search</button>
-                </div>
-                <div class="results-nav">
-                    <a href="#tools">Tools</a>
+                    <button type="button" id="resultsSearchBtn">Rechercher</button>
                 </div>
             </div>
 
-            <!-- Results Container -->
+            <!-- Category tabs -->
+            <div class="results-categories">
+                <a href="?q=${encodeURIComponent(query)}" class="${currentCategory === '' ? 'active' : ''}">Web</a>
+                <a href="?q=${encodeURIComponent(query)}&categorie=Images" class="${currentCategory.toLowerCase() === 'images' ? 'active' : ''}">Images</a>
+                <a href="?q=${encodeURIComponent(query)}&categorie=Videos" class="${currentCategory.toLowerCase() === 'videos' ? 'active' : ''}">Videos</a>
+                <a href="?q=${encodeURIComponent(query)}&categorie=PDF" class="${currentCategory.toLowerCase() === 'pdf' ? 'active' : ''}">PDF</a>
+                <a href="?q=${encodeURIComponent(query)}&categorie=News" class="${currentCategory.toLowerCase() === 'news' ? 'active' : ''}">News</a>
+            </div>
             <div class="results-container">
                 <div id="statsBar" class="stats-bar"></div>
                 <div id="featuredSnippet" class="featured-snippet" style="display: none;">
@@ -157,14 +314,38 @@ function showResultsPage(query) {
         </div>
     `;
 
+    // Set up login button on results page
+    const isLoggedIn = localStorage.getItem('loggedIn') === 'true';
+    const resultsLoginBtn = document.getElementById('resultsLoginBtn');
+    if (isLoggedIn) {
+        resultsLoginBtn.textContent = 'Se déconnecter';
+        resultsLoginBtn.addEventListener('click', () => {
+            localStorage.removeItem('loggedIn');
+            location.reload();
+        });
+    } else {
+        resultsLoginBtn.textContent = 'Se connecter';
+        resultsLoginBtn.addEventListener('click', () => {
+            window.location.href = 'login.html';
+        });
+    }
+
     // Set up results page events
     const resultsSearchInput = document.getElementById('resultsSearchInput');
     const resultsSearchBtn = document.getElementById('resultsSearchBtn');
+    // adjust search input placeholder when category filter is active
+    if (currentCategory) {
+        resultsSearchInput.placeholder = `Search ${currentCategory}`;
+    }
 
     resultsSearchBtn.addEventListener('click', () => {
         const newQuery = resultsSearchInput.value.trim();
         if (newQuery) {
-            window.location.href = `?q=${encodeURIComponent(newQuery)}`;
+            let url = `?q=${encodeURIComponent(newQuery)}`;
+            if (currentCategory) {
+                url += `&categorie=${encodeURIComponent(currentCategory)}`;
+            }
+            window.location.href = url;
         }
     });
 
@@ -191,7 +372,7 @@ async function loadSearchResults(query, page = 1) {
     try {
         // Main search
         const offset = (page - 1) * 10;
-        const response = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}&limit=10`);
+        const response = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}&limit=50`);
 
         if (!response.ok) throw new Error('Search failed');
         const data = await response.json();
@@ -199,6 +380,21 @@ async function loadSearchResults(query, page = 1) {
         allResults = data.results || [];
         const totalResults = data.total_results || 0;
         const searchTime = data.search_time || 0;
+
+        // Filter results based on category
+        if (currentCategory) {
+            const cat = currentCategory.toLowerCase();
+            if (cat === 'images') {
+                allResults = allResults.filter(r => r.categorie && r.categorie.toLowerCase().includes('image'));
+            } else if (cat === 'videos') {
+                allResults = allResults.filter(r => r.categorie && r.categorie.toLowerCase().includes('video'));
+            } else if (cat === 'pdf') {
+                allResults = allResults.filter(r => r.categorie && r.categorie.toLowerCase() === 'pdf');
+            } else if (cat === 'news') {
+                allResults = allResults.filter(r => r.categorie && r.categorie.toLowerCase().includes('news'));
+            }
+            // For 'web' or empty, show all
+        }
 
         statsBar.textContent = `About ${totalResults} results (${searchTime.toFixed(3)}s)`;
 
@@ -267,11 +463,31 @@ function displayResults(results) {
     results.forEach(result => {
         const resultEl = document.createElement('div');
         resultEl.className = 'result-item';
-        
+
         const urlObj = new URL(result.url || 'https://example.com');
         const displayUrl = urlObj.host + (urlObj.pathname !== '/' ? urlObj.pathname : '');
-        
+
+        // media preview for image/video/pdf categories
+        let mediaHtml = '';
+        if (result.categorie) {
+            const cat = result.categorie.toLowerCase();
+            if (cat === 'image' || cat === 'images') {
+                mediaHtml = `<div class="result-media"><img src="${escapeHtml(result.url)}" alt="${escapeHtml(result.titre || '')}" class="result-image" /></div>`;
+            } else if (cat === 'video' || cat === 'videos') {
+                mediaHtml = `<div class="result-media"><video controls width="320" src="${escapeHtml(result.url)}" class="result-video"></video></div>`;
+            } else if (cat === 'pdf') {
+                mediaHtml = `<div class="result-media"><iframe src="${escapeHtml(result.url)}" width="320" height="240" class="result-pdf"></iframe></div>`;
+            }
+        }
+
+        // show category label
+        let categoryLabel = '';
+        if (result.categorie) {
+            categoryLabel = `<div class="result-category">${escapeHtml(result.categorie)}</div>`;
+        }
+
         resultEl.innerHTML = `
+            ${mediaHtml}
             <div class="result-url">
                 <span class="result-url-display">${escapeHtml(displayUrl)}</span>
             </div>
@@ -283,6 +499,7 @@ function displayResults(results) {
             </div>
             <div class="result-meta">
                 Relevance: ${result.relevance_score ? result.relevance_score.toFixed(2) : 'N/A'}
+                ${categoryLabel}
             </div>
         `;
 
@@ -378,6 +595,70 @@ async function loadAutocompleteSuggestions(query, container, onSelect) {
         }
     } catch (e) {
         console.error('Autocomplete error:', e);
+        // Fallback to predefined suggestions
+        loadFallbackSuggestions(query, container, onSelect);
+    }
+}
+
+// Fallback suggestions from indexed elements
+async function loadFallbackSuggestions(query, container, onSelect) {
+    try {
+        const response = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}&limit=5`);
+        if (response.ok) {
+            const data = await response.json();
+            const suggestions = data.results ? data.results.map(r => r.titre || r.title || r.url).slice(0, 5) : [];
+            if (suggestions.length > 0) {
+                container.innerHTML = '';
+                suggestions.forEach(suggestion => {
+                    const item = document.createElement('div');
+                    item.className = 'autocomplete-item';
+                    item.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <span>${escapeHtml(suggestion)}</span>
+                    `;
+                    item.addEventListener('click', () => {
+                        document.getElementById('homeSearchInput').value = suggestion;
+                        onSelect(suggestion);
+                    });
+                    container.appendChild(item);
+                });
+                container.classList.add('show');
+            } else {
+                container.classList.remove('show');
+            }
+        } else {
+            // If search API also fails, use predefined
+            const words = ["google", "github", "javascript", "python", "machine learning"];
+            const filtered = words.filter(word => word.toLowerCase().includes(query.toLowerCase()) && query !== "");
+            if (filtered.length > 0) {
+                container.innerHTML = '';
+                filtered.forEach(word => {
+                    const item = document.createElement('div');
+                    item.className = 'autocomplete-item';
+                    item.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <span>${escapeHtml(word)}</span>
+                    `;
+                    item.addEventListener('click', () => {
+                        document.getElementById('homeSearchInput').value = word;
+                        onSelect(word);
+                    });
+                    container.appendChild(item);
+                });
+                container.classList.add('show');
+            } else {
+                container.classList.remove('show');
+            }
+        }
+    } catch (e) {
+        console.error('Fallback autocomplete error:', e);
+        container.classList.remove('show');
     }
 }
 

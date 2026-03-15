@@ -5,6 +5,7 @@ import time
 from typing import List, Dict, Tuple
 from collections import Counter
 import re
+import json
 from config import MYSQL_CONFIG
 from models import Document, SearchQuery, SearchResult
 
@@ -28,7 +29,7 @@ class DatabaseService:
     @staticmethod
     def add_document(titre: str, description: str, contenu: str, 
                      categorie: str, tags: str, auteur: str, 
-                     url: str = None, date_publication: str = None) -> int:
+                     url: str = None, date_publication: str = None, metadata: dict = None) -> int:
         """Ajoute un nouveau document"""
         try:
             conn = DatabaseService.get_connection()
@@ -36,10 +37,10 @@ class DatabaseService:
             
             query = """
                 INSERT INTO documents 
-                (titre, description, contenu, categorie, tags, auteur, url, date_publication)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                (titre, description, contenu, categorie, tags, auteur, url, date_publication, metadata)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
-            cursor.execute(query, (titre, description, contenu, categorie, tags, auteur, url, date_publication))
+            cursor.execute(query, (titre, description, contenu, categorie, tags, auteur, url, date_publication, json.dumps(metadata) if metadata else None))
             conn.commit()
             doc_id = cursor.lastrowid
             
@@ -62,6 +63,13 @@ class DatabaseService:
             cursor.execute(query)
             docs = cursor.fetchall()
             
+            # Convert JSON fields to dicts if needed
+            for doc in docs:
+                if isinstance(doc.get('metadata'), str):
+                    try:
+                        doc['metadata'] = json.loads(doc['metadata'])
+                    except Exception:
+                        doc['metadata'] = {}
             documents = [Document(**doc) for doc in docs]
             cursor.close()
             conn.close()
@@ -71,7 +79,21 @@ class DatabaseService:
             raise
 
     @staticmethod
-    def get_document_by_id(doc_id: int) -> Document:
+    def get_total_documents_count() -> int:
+        """Retourne le nombre total de documents actifs"""
+        try:
+            conn = DatabaseService.get_connection()
+            cursor = conn.cursor()
+
+            cursor.execute("SELECT COUNT(*) FROM documents WHERE active = TRUE")
+            count = cursor.fetchone()[0]
+
+            cursor.close()
+            conn.close()
+            return count
+        except Exception as e:
+            logger.error(f"Erreur comptage documents: {e}")
+            return 0
         """Récupère un document par son ID"""
         try:
             conn = DatabaseService.get_connection()
@@ -84,6 +106,11 @@ class DatabaseService:
             conn.close()
             
             if doc:
+                if isinstance(doc.get('metadata'), str):
+                    try:
+                        doc['metadata'] = json.loads(doc['metadata'])
+                    except Exception:
+                        doc['metadata'] = {}
                 return Document(**doc)
             return None
         except Exception as e:
@@ -247,57 +274,91 @@ class SearchService:
     def search(query_text: str, filters: Dict = None, limit: int = 20) -> SearchResult:
         """Effectue une recherche"""
         start_time = time.time()
-        
+
         try:
             # Parser la requête
             search_query = SearchQuery(query_text, filters)
             query_terms = search_query.get_terms()
-            
+
             if not query_terms:
                 return SearchResult(query_text, [], 0, 0)
-            
-            # Récupérer tous les documents
-            all_docs = DatabaseService.get_all_documents()
-            
-            # Filtrer par terme (FULLTEXT SEARCH)
-            relevant_docs = SearchService._filter_documents(all_docs, query_terms)
-            
+
+            # Filtrer par terme (FULLTEXT SEARCH) - récupère directement les documents pertinents
+            relevant_docs = SearchService._filter_documents([], query_terms)
+
             # Appliquer les filtres supplémentaires
             if filters:
                 relevant_docs = SearchService._apply_filters(relevant_docs, filters)
-            
-            # Classer les résultats avec TF-IDF
-            ranked_docs = TFIDFService.rank_documents(relevant_docs, query_terms, all_docs)
-            
+
+            # Récupérer le nombre total de documents pour les statistiques
+            total_docs_count = DatabaseService.get_total_documents_count()
+
+            # Classer les résultats avec TF-IDF (utilise les documents pertinents seulement)
+            ranked_docs = TFIDFService.rank_documents(relevant_docs, query_terms, relevant_docs)
+
             # Limiter le nombre de résultats
             results = ranked_docs[:limit]
-            
+
             duration_ms = (time.time() - start_time) * 1000
-            
+
             # Enregistrer les statistiques
             DatabaseService.save_search_stats(query_text, len(results), duree_ms=duration_ms)
-            
+
             logger.info(f"Recherche: '{query_text}' → {len(results)} résultats en {duration_ms:.2f}ms")
-            
-            search_result = SearchResult(query_text, results, len(all_docs), duration_ms)
+
+            search_result = SearchResult(query_text, results, total_docs_count, duration_ms)
             return search_result
-            
+
         except Exception as e:
             logger.error(f"Erreur recherche: {e}")
             return SearchResult(query_text, [], 0, (time.time() - start_time) * 1000)
 
     @staticmethod
     def _filter_documents(documents: List[Document], query_terms: List[str]) -> List[Document]:
-        """Filtre les documents pertinents pour les termes"""
-        relevant = []
-        
-        for doc in documents:
-            # Vérifier si le document contient au moins un terme
-            doc_text = (doc.titre + ' ' + doc.description + ' ' + doc.contenu).lower()
-            if any(term in doc_text for term in query_terms):
-                relevant.append(doc)
-        
-        return relevant
+        """Filtre les documents pertinents pour les termes en utilisant FULLTEXT SEARCH"""
+        if not query_terms:
+            return []
+
+        try:
+            conn = DatabaseService.get_connection()
+            cursor = conn.cursor(dictionary=True)
+
+            # Construire la requête FULLTEXT
+            search_terms = ' '.join(query_terms)
+            query = """
+                SELECT * FROM documents
+                WHERE active = TRUE
+                AND MATCH(titre, description, contenu) AGAINST(%s IN NATURAL LANGUAGE MODE)
+                ORDER BY MATCH(titre, description, contenu) AGAINST(%s IN NATURAL LANGUAGE MODE) DESC
+            """
+
+            cursor.execute(query, (search_terms, search_terms))
+            docs = cursor.fetchall()
+
+            cursor.close()
+            conn.close()
+
+            # Convertir en objets Document
+            relevant_docs = []
+            for doc in docs:
+                if isinstance(doc.get('metadata'), str):
+                    try:
+                        doc['metadata'] = json.loads(doc['metadata'])
+                    except Exception:
+                        doc['metadata'] = {}
+                relevant_docs.append(Document(**doc))
+
+            return relevant_docs
+
+        except Exception as e:
+            logger.error(f"Erreur recherche FULLTEXT: {e}")
+            # Fallback vers la recherche simple
+            relevant = []
+            for doc in documents:
+                doc_text = (doc.titre + ' ' + doc.description + ' ' + doc.contenu).lower()
+                if any(term in doc_text for term in query_terms):
+                    relevant.append(doc)
+            return relevant
 
     @staticmethod
     def _apply_filters(documents: List[Document], filters: Dict) -> List[Document]:

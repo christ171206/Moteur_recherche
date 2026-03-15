@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Recherche Debug</title>
+</head>
+<body>
+    <h1>Test de recherche avec debug</h1>
+    <input type="text" id="queryInput" placeholder="Entrez votre recherche" value="python">
+    <button onclick="testSearch()">Tester</button>
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+
+        async function testSearch() {
+            const query = document.getElementById('queryInput').value;
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '🔍 Recherche en cours...';
+
+            try {
+                console.log('🔍 Recherche:', query);
+                const searchUrl = `${API_BASE}/search?q=${encodeURIComponent(query)}&limit=3`;
+                console.log('📡 URL:', searchUrl);
+
+                const response = await fetch(searchUrl);
+                console.log('📥 Réponse:', response.status, response.statusText);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('📊 Données:', data);
+
+                resultsDiv.innerHTML = `
+                    <h2>✅ Succès !</h2>
+                    <p>Requête: "${data.query}"</p>
+                    <p>Temps: ${data.search_time.toFixed(3)}s</p>
+                    <p>Résultats: ${data.results.length}</p>
+                    <p>Total dans base: ${data.total_results}</p>
+                    <ul>
+                        ${data.results.map(r => `<li><strong>${r.titre}</strong> (${r.categorie})<br>${r.description || r.contenu.substring(0, 100)}...</li>`).join('')}
+                    </ul>
+                `;
+
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                resultsDiv.innerHTML = `
+                    <h2>❌ Erreur</h2>
+                    <p>${error.message}</p>
+                    <p>Vérifiez la console pour plus de détails</p>
+                `;
+            }
+        }
+
+        // Test automatique au chargement
+        window.onload = function() {
+            setTimeout(testSearch, 1000);
+        };
+    </script>
+</body>
+</html>

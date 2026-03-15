@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Recherche</title>
+</head>
+<body>
+    <h1>Test de recherche</h1>
+    <button onclick="testSearch()">Tester la recherche</button>
+    <div id="results"></div>
+
+    <script>
+        async function testSearch() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = 'Chargement...';
+
+            try {
+                const response = await fetch('http://localhost:5000/api/search?q=python&limit=3');
+                const data = await response.json();
+
+                resultsDiv.innerHTML = `
+                    <h2>Résultats pour "${data.query}"</h2>
+                    <p>Temps: ${data.search_time.toFixed(3)}s</p>
+                    <p>Total dans base: ${data.total_results}</p>
+                    <p>Résultats trouvés: ${data.results.length}</p>
+                    <ul>
+                        ${data.results.map(r => `<li>${r.titre} (${r.categorie})</li>`).join('')}
+                    </ul>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `Erreur: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -756,7 +756,61 @@ DOCUMENTS = [
         'auteur': 'Performance Engineering',
         'tags': 'caching,performance,optimization,redis'
     },
-]
+    # === IMAGES ET VIDEOS DE TEST ===
+    {
+        'titre': 'Logo Python Officiel',
+        'description': 'Le logo officiel du langage Python avec le serpent emblématique',
+        'contenu': '''Image du logo Python officiel. Le logo représente deux serpents entrelacés formant la lettre P majuscule. Couleurs bleu et jaune caractéristiques. Utilisé pour représenter le langage de programmation Python dans la documentation officielle et les présentations.''',
+        'url': 'https://python.org/static/img/python-logo.png',
+        'categorie': 'image',
+        'auteur': 'Python Foundation',
+        'tags': 'python,logo,image,officiel,serpent,bleu,jaune'
+    },
+    {
+        'titre': 'Logo JavaScript ES6+ Features Illustration',
+        'description': 'Illustration des nouvelles fonctionnalités ES6 de JavaScript',
+        'contenu': '''Image illustrant les nouvelles fonctionnalités de JavaScript ES6+. Montre les arrow functions, classes, promises, async/await, destructuring. Utilisé dans les tutoriels et présentations sur JavaScript moderne.''',
+        'url': 'https://developer.mozilla.org/js-es6-features.jpg',
+        'categorie': 'image',
+        'auteur': 'MDN Web Docs',
+        'tags': 'javascript,es6,features,illustration,tutoriel,moderne,async,promises'
+    },
+    {
+        'titre': 'Diagramme Architecture MVC',
+        'description': 'Schéma explicatif de l\'architecture Modèle-Vue-Contrôleur',
+        'contenu': '''Diagramme illustrant l'architecture MVC (Model-View-Controller). Montre les interactions entre le modèle de données, la vue utilisateur et le contrôleur. Flèches montrant le flux de données et les responsabilités de chaque composant.''',
+        'url': 'https://architecture.org/mvc-diagram.png',
+        'categorie': 'image',
+        'auteur': 'Software Architecture Patterns',
+        'tags': 'architecture,mvc,diagramme,schema,modele,vue,controleur,design-patterns'
+    },
+    {
+        'titre': 'Tutoriel Python pour Débutants - Vidéo Complète',
+        'description': 'Vidéo tutoriel complet pour apprendre Python de zéro en 2 heures',
+        'contenu': '''Vidéo tutoriel complète pour apprendre Python depuis le début. Couvre l'installation, les variables, les boucles, les fonctions, les classes. Durée: 2h15. Niveau débutant à intermédiaire. Inclut des exercices pratiques.''',
+        'url': 'https://youtube.com/watch?v=example-python-tutorial.mp4',
+        'categorie': 'video',
+        'auteur': 'Python Learning Channel',
+        'tags': 'python,tutoriel,video,debutant,apprentissage,programmation,exercices,2h15,complet'
+    },
+    {
+        'titre': 'Démonstration Live Coding JavaScript ES6 Features',
+        'description': 'Session de live coding montrant les fonctionnalités modernes de JavaScript ES6+',
+        'contenu': '''Vidéo de démonstration en direct montrant l'utilisation des fonctionnalités ES6 de JavaScript. Code en temps réel avec explications. Couvre les arrow functions, template literals, destructuring, spread operator, async/await.''',
+        'url': 'https://youtube.com/watch?v=js-es6-live-demo.mp4',
+        'categorie': 'video',
+        'auteur': 'JavaScript Masters',
+        'tags': 'javascript,es6,live-coding,demonstration,features,moderne,async,await,template-literals,arrow-functions'
+    },
+    {
+        'titre': 'Architecture Microservices - Explication Visuelle 3D',
+        'description': 'Animation 3D expliquant l\'architecture de microservices avec exemples concrets',
+        'contenu': '''Vidéo d'animation 3D expliquant l'architecture de microservices. Montre comment les services communiquent, la scalabilité, les avantages et inconvénients. Exemples avec containers Docker et orchestration Kubernetes.''',
+        'url': 'https://architecture-videos.com/microservices-3d.mp4',
+        'categorie': 'video',
+        'auteur': 'Cloud Architecture Visuals',
+        'tags': 'microservices,architecture,3d,animation,docker,kubernetes,scalabilite,containers,services,orchestration'
+    },]
 
 def populate_database():
     """Insère tous les documents dans la base de données"""

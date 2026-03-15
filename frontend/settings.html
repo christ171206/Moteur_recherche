@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paramètres - AXORA</title>
+    <link rel="stylesheet" href="google_style.css">
+    <style>
+        body { background-image: none; background-color: #e9ecef; }
+        .settings-page {
+            min-height: 100vh;
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .settings-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .settings-logo {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+        .settings-content {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .setting-group {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+        }
+        .setting-group:last-child {
+            border-bottom: none;
+        }
+        .setting-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .setting-label {
+            flex: 1;
+        }
+        .setting-control {
+            flex: 0 0 auto;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .toggle-slider {
+            background-color: var(--accent-color);
+        }
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        .select-control {
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        .save-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+        .save-btn:hover {
+            background: #3367d6;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 2rem;
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-page">
+        <div class="settings-header">
+            <div class="settings-logo" translate="no">
+                <span class="letter a" style="color: #EA4335;">A</span><span class="letter x" style="color: #FBBC05;">X</span><span class="letter o" style="color: #34A853;">O</span><span class="letter r" style="color: #4285F4;">R</span><span class="letter a2" style="color: #EA4335;">A</span>
+            </div>
+            <h1>Paramètres</h1>
+        </div>
+        <div class="settings-content">
+            <div class="setting-group">
+                <div class="setting-title">Recherche</div>
+                <div class="setting-item">
+                    <span class="setting-label">Suggestions automatiques</span>
+                    <label class="setting-control toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">Recherche sécurisée</span>
+                    <label class="setting-control toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">Langue des résultats</span>
+                    <select class="setting-control select-control">
+                        <option value="fr">Français</option>
+                        <option value="en">Anglais</option>
+                        <option value="auto">Automatique</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="setting-group">
+                <div class="setting-title">Interface</div>
+                <div class="setting-item">
+                    <span class="setting-label">Thème sombre</span>
+                    <label class="setting-control toggle-switch">
+                        <input type="checkbox">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">Résultats par page</span>
+                    <select class="setting-control select-control">
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="setting-group">
+                <div class="setting-title">Confidentialité</div>
+                <div class="setting-item">
+                    <span class="setting-label">Historique de recherche</span>
+                    <label class="setting-control toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">Cookies de personnalisation</span>
+                    <label class="setting-control toggle-switch">
+                        <input type="checkbox">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <button class="save-btn">Enregistrer les paramètres</button>
+        </div>
+        
+        <a href="google.html" class="back-link">← Retour à la recherche</a>
+    </div>
+
+    <script>
+        // Save settings to localStorage
+        document.querySelector('.save-btn').addEventListener('click', () => {
+            alert('Paramètres enregistrés !');
+        });
+        
+        // Load settings from localStorage (placeholder)
+        // In a real implementation, load and save actual settings
+    </script>
+</body>
+</html>

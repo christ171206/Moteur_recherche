@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Résultats</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Test d'affichage des résultats</h1>
+    <div id="output"></div>
+
+    <script>
+        const output = document.getElementById('output');
+
+        // Fonction pour afficher les résultats
+        function displayResults(results) {
+            console.log('displayResults appelée avec', results.length, 'résultats');
+
+            results.forEach((result, index) => {
+                console.log(`Résultat ${index + 1}:`, result.titre);
+
+                const div = document.createElement('div');
+                div.className = 'result';
+                div.innerHTML = `
+                    <h3>${result.titre || 'Sans titre'}</h3>
+                    <p><strong>Catégorie:</strong> ${result.categorie || 'N/A'}</p>
+                    <p><strong>Description:</strong> ${result.description || result.contenu?.substring(0, 100) || 'N/A'}</p>
+                    <p><strong>URL:</strong> <a href="${result.url}" target="_blank">${result.url}</a></p>
+                `;
+                output.appendChild(div);
+            });
+        }
+
+        // Test de recherche
+        async function testSearch() {
+            output.innerHTML = '<p>🔍 Recherche en cours...</p>';
+
+            try {
+                const response = await fetch('http://localhost:5000/api/search?q=python&limit=3');
+                const data = await response.json();
+
+                output.innerHTML = `
+                    <h2>Résultats pour "${data.query}"</h2>
+                    <p>Temps: ${data.search_time.toFixed(3)}s</p>
+                    <p>Nombre de résultats: ${data.results.length}</p>
+                    <p>Total dans base: ${data.total_results}</p>
+                `;
+
+                displayResults(data.results);
+
+            } catch (error) {
+                output.innerHTML = `<p style="color: red;">❌ Erreur: ${error.message}</p>`;
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Lancer le test automatiquement
+        testSearch();
+    </script>
+</body>
+</html>

@@ -39,7 +39,7 @@ Cela ajoute plein de documents pertinents à ta base de données.
 
 ### **Étape 5 : Utiliser le moteur!**
 Ouvre dans ton navigateur:
-- **Chercher**: http://localhost/Moteur-recherche/frontend/google.html
+- **Chercher**: http://localhost/Moteur-recherche/frontend/google.html (tu peux maintenant basculer entre Web, Images, Vidéos et Actualités via les onglets en haut)
 - **Admin**: http://localhost/Moteur-recherche/frontend/admin.html
 
 ✅ **C'est activé!** Essaie de chercher "Python", "Web", "Machine Learning"...

@@ -10,6 +10,37 @@ def insert_test_data():
     """Insère 10 documents de test"""
     
     documents = [
+        # examples for image/video/news categories
+        {
+            'titre': 'Cute Puppy Photo',
+            'description': 'A high resolution picture of a puppy',
+            'contenu': 'This is an adorable puppy image.',
+            'categorie': 'Images',
+            'tags': 'puppy,image,animals',
+            'auteur': 'PhotoLibrary',
+            'url': 'https://example.com/images/puppy.jpg',
+            'date_publication': '2025-03-01'
+        },
+        {
+            'titre': 'Tutorial: Building a Chatbot (Video)',
+            'description': 'Step-by-step video tutorial to build your first chatbot',
+            'contenu': 'Watch this video to learn how to build a chatbot using Python and NLP libraries.',
+            'categorie': 'Videos',
+            'tags': 'chatbot,video,tutorial',
+            'auteur': 'VideoCreator',
+            'url': 'https://example.com/videos/chatbot.mp4',
+            'date_publication': '2025-03-02'
+        },
+        {
+            'titre': 'Latest Tech News: AI Breakthrough',
+            'description': 'A new AI model surpasses human performance',
+            'contenu': 'Today the research community announced an AI model that achieves state-of-the-art results.',
+            'categorie': 'News',
+            'tags': 'ai,news,technology',
+            'auteur': 'TechJournal',
+            'url': 'https://news.example.com/ai-breakthrough',
+            'date_publication': '2025-03-03'
+        },
         {
             'titre': 'Python Programming Guide',
             'description': 'Complete guide to Python programming',

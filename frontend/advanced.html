@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recherche avancée - AXORA</title>
+    <link rel="stylesheet" href="google_style.css">
+    <style>
+        body { background-image: none; background-color: #f8f9fa; }
+        .advanced-page {
+            min-height: 100vh;
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .advanced-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .advanced-logo {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+        .advanced-form {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+        }
+        .checkbox-item input {
+            margin-right: 0.5rem;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+        .submit-btn:hover {
+            background: #3367d6;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 2rem;
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="advanced-page">
+        <div class="advanced-header">
+            <div class="advanced-logo" translate="no">
+                <span class="letter a" style="color: #EA4335;">A</span><span class="letter x" style="color: #FBBC05;">X</span><span class="letter o" style="color: #34A853;">O</span><span class="letter r" style="color: #4285F4;">R</span><span class="letter a2" style="color: #EA4335;">A</span>
+            </div>
+            <h1>Recherche avancée</h1>
+        </div>
+        <form class="advanced-form" action="google.html" method="get">
+            <div class="form-group">
+                <label class="form-label" for="query">Mots-clés</label>
+                <input type="text" id="query" name="q" class="form-input" placeholder="Entrez vos mots-clés">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="category">Catégorie</label>
+                <select id="category" name="categorie" class="form-select">
+                    <option value="">Toutes les catégories</option>
+                    <option value="Images">Images</option>
+                    <option value="Videos">Vidéos</option>
+                    <option value="News">Actualités</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Options de recherche</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="exact" name="exact">
+                        <label for="exact">Phrase exacte</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="recent" name="recent">
+                        <label for="recent">Résultats récents</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="safe" name="safe" checked>
+                        <label for="safe">Recherche sécurisée</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="language">Langue</label>
+                <select id="language" name="lang" class="form-select">
+                    <option value="fr">Français</option>
+                    <option value="en">Anglais</option>
+                    <option value="es">Espagnol</option>
+                    <option value="de">Allemand</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="submit-btn">Rechercher</button>
+        </form>
+        
+        <a href="google.html" class="back-link">← Retour à la recherche</a>
+    </div>
+</body>
+</html>

@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from config import DEBUG, HOST, PORT
 from services import DatabaseService, SearchService
@@ -8,6 +8,7 @@ from ranking import BM25Ranker
 from google_features import GoogleLikeFeatures
 import logging
 from datetime import datetime
+import os
 
 # Configuration du logging
 logging.basicConfig(
@@ -16,8 +17,19 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='../frontend', static_url_path='/')
 CORS(app)
+
+# ===================================================
+# FRONTEND ROUTES
+# ===================================================
+@app.route('/')
+def index():
+    return send_from_directory(app.static_folder, 'google.html')
+
+@app.route('/admin')
+def admin():
+    return send_from_directory(app.static_folder, 'admin.html')
 
 # ===================================================
 # ERROR HANDLERS
@@ -34,6 +46,19 @@ def not_found(error):
 def server_error(error):
     logger.error(f"Erreur serveur: {error}")
     return jsonify({'error': 'Erreur serveur interne'}), 500
+
+# ===================================================
+# MEDIA FILES SERVING
+# ===================================================
+@app.route('/media/<path:filename>')
+def serve_media(filename):
+    """Sert les fichiers médias téléchargés (images, vidéos, etc.)"""
+    try:
+        media_dir = os.path.join(os.path.dirname(__file__), 'downloads')
+        return send_from_directory(media_dir, filename)
+    except Exception as e:
+        logger.error(f"Erreur service média {filename}: {e}")
+        return jsonify({'error': 'Fichier média non trouvé'}), 404
 
 # ===================================================
 # HEALTH CHECK
@@ -127,6 +152,92 @@ def statistics():
         return jsonify(stats), 200
     except Exception as e:
         logger.error(f"Erreur statistiques: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# ===================================================
+# IMAGE/VIDEO SEARCH ENDPOINTS
+# ===================================================
+@app.route('/api/search/images', methods=['GET'])
+def search_images():
+    """Recherche d'images
+    
+    Parameters:
+    - q: requête (optionnel pour recherche générale d'images)
+    - limit: nombre de résultats (optionnel, default=20)
+    """
+    try:
+        query = request.args.get('q', '').strip()
+        limit = request.args.get('limit', 20, type=int)
+        
+        # Recherche dans la catégorie 'image'
+        filters = {'categorie': 'image'}
+        result = SearchService.search(query, filters, limit)
+        
+        return jsonify(result.to_dict()), 200
+    except Exception as e:
+        logger.error(f"Erreur recherche images: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/search/videos', methods=['GET'])
+def search_videos():
+    """Recherche de vidéos
+    
+    Parameters:
+    - q: requête (optionnel pour recherche générale de vidéos)
+    - limit: nombre de résultats (optionnel, default=20)
+    """
+    try:
+        query = request.args.get('q', '').strip()
+        limit = request.args.get('limit', 20, type=int)
+        
+        # Recherche dans la catégorie 'video'
+        filters = {'categorie': 'video'}
+        result = SearchService.search(query, filters, limit)
+        
+        return jsonify(result.to_dict()), 200
+    except Exception as e:
+        logger.error(f"Erreur recherche vidéos: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/search/reverse-image', methods=['POST'])
+def reverse_image_search():
+    """Recherche par image inversée (upload d'image)
+    
+    Body: Form-data avec fichier 'image'
+    """
+    try:
+        if 'image' not in request.files:
+            return jsonify({'error': 'Aucun fichier image fourni'}), 400
+        
+        image_file = request.files['image']
+        if image_file.filename == '':
+            return jsonify({'error': 'Nom de fichier vide'}), 400
+        
+        # Lire le contenu de l'image
+        image_content = image_file.read()
+        
+        # Extraire le texte OCR de l'image uploadée
+        from crawler import WebCrawler
+        crawler = WebCrawler()
+        ocr_metadata = crawler.extract_image_metadata(image_content)
+        ocr_text = ocr_metadata.get('ocr_text', '')
+        
+        if not ocr_text:
+            return jsonify({
+                'message': 'Aucun texte détecté dans l\'image',
+                'results': []
+            }), 200
+        
+        # Rechercher avec le texte OCR
+        filters = {'categorie': 'image'}
+        result = SearchService.search(ocr_text, filters, 20)
+        
+        return jsonify({
+            'ocr_text': ocr_text,
+            'results': result.to_dict()
+        }), 200
+    except Exception as e:
+        logger.error(f"Erreur recherche image inversée: {e}")
         return jsonify({'error': str(e)}), 500
 
 # ===================================================

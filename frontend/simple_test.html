@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Simple</title>
+</head>
+<body>
+    <h1>Test Simple de Recherche</h1>
+    <form onsubmit="search(event)">
+        <input type="text" id="q" placeholder="Rechercher..." value="python">
+        <button type="submit">Rechercher</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        async function search(event) {
+            event.preventDefault();
+            const query = document.getElementById('q').value;
+            const resultDiv = document.getElementById('result');
+
+            resultDiv.innerHTML = '⏳ Recherche...';
+
+            try {
+                const response = await fetch(`http://localhost:5000/api/search?q=${encodeURIComponent(query)}&limit=2`);
+                const data = await response.json();
+
+                resultDiv.innerHTML = `
+                    <h2>Résultats pour "${data.query}"</h2>
+                    <p>${data.results.length} résultats trouvés</p>
+                    <ul>
+                        ${data.results.map(r => `<li>${r.titre}</li>`).join('')}
+                    </ul>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `❌ Erreur: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

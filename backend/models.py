@@ -11,7 +11,7 @@ class Document:
     def __init__(self, id: int, titre: str, description: str, contenu: str, 
                  categorie: str, tags: str, auteur: str, date_publication: str,
                  url: str = None, vue: int = 0, pertinence_score: float = 0,
-                 views_count: int = 0, **kwargs):
+                 views_count: int = 0, metadata: dict = None, **kwargs):
         """Initialise un document - accepte les kwargs pour la compatibilité BD"""
         self.id = id
         self.titre = titre
@@ -24,6 +24,7 @@ class Document:
         self.url = url
         self.views_count = views_count or vue  # Support vue ou views_count
         self.relevance_score = pertinence_score
+        self.metadata = metadata or {}
         # Ignorer les arguments supplémentaires (date_creation, etc.)
         self.vue = vue
 
@@ -39,7 +40,8 @@ class Document:
             'date_publication': self.date_publication,
             'views_count': self.views_count,
             'relevance_score': round(self.relevance_score, 4) if self.relevance_score else 0,
-            'url': self.url
+            'url': self.url,
+            'metadata': self.metadata
         }
 
 class SearchQuery:

@@ -90,6 +90,23 @@ C:\Xampp\htdocs\Moteur-recherche\
 3. Voir les résultats classés par BM25
 4. Featured snippets affichés automatiquement
 
+### **Recherche d'Images**
+1. Cliquer sur l'icône d'appareil photo dans la barre de recherche
+2. Sélectionner une image depuis votre ordinateur
+3. Le système extrait automatiquement le texte de l'image (OCR)
+4. Recherche d'images similaires basée sur le contenu textuel
+
+### **Recherche de Vidéos**
+1. Cliquer sur l'onglet "Videos" dans les résultats de recherche
+2. Taper une requête pour rechercher des vidéos
+3. Voir les vidéos crawlées avec métadonnées (durée, résolution, etc.)
+
+### **Affichage Visuel des Résultats**
+- **Recherches générales** : Incluent automatiquement des images et vidéos pertinentes
+- **Mode Grille** : Pour les recherches d'images/vidéos, affichage en grille avec miniatures
+- **Mode Liste** : Pour les recherches textuelles traditionnelles
+- **Médias Locaux** : Les fichiers téléchargés s'affichent directement depuis le serveur
+
 ### **Crawler et Indexer (admin.html)**
 1. Accéder à `frontend/admin.html`
 2. Onglet **Crawler**:
@@ -134,6 +151,36 @@ Moteur-recherche/
 ---
 
 ## 🔧 API REST
+
+### **Recherche d'Images**
+```bash
+GET /api/search/images?q=chat&limit=20
+```
+
+### **Recherche de Vidéos**
+```bash
+GET /api/search/videos?q=tutoriel&limit=20
+```
+
+### **Recherche par Image Inversée**
+```bash
+POST /api/search/reverse-image
+Content-Type: multipart/form-data
+
+# Avec fichier image dans le body
+```
+
+Réponse pour recherche image inversée:
+```json
+{
+  "ocr_text": "Texte extrait de l'image",
+  "results": {
+    "results": [...],
+    "total_results": 15,
+    "search_time": 0.045
+  }
+}
+```
 
 ### **Recherche**
 ```bash
@@ -208,11 +255,16 @@ GET /api/statistics             # Stats globales
 - ✅ Did-you-mean suggestions
 - ✅ Direct answers extraction
 - ✅ Query expansion avec synonymes
-- ✅ Autocomplete
+- ✅ **Recherche d'images avec OCR**
+- ✅ **Recherche de vidéos avec métadonnées**
+- ✅ **Recherche par image inversée**
 
 ### **Web Crawler**
 - Crawl récursif avec déduplication d'URLs
 - Extraction métadonnées (titre, description, date)
+- **Traitement d'images avec OCR (extraction de texte)**
+- **Extraction de métadonnées vidéos (durée, résolution, miniatures)**
+- Téléchargement automatique des médias
 - Respect des délais (politesse)
 - Gestion erreurs et timeouts
 - User-Agent professionnel
@@ -279,6 +331,11 @@ CORS error accessing localhost:5000
 ✅ **Indexation** full-text en MySQL  
 ✅ **Ranking** professionnel (BM25)  
 ✅ **Features Google** (snippets, suggestions)  
+✅ **Recherche d'Images** avec OCR intégré  
+✅ **Recherche de Vidéos** avec métadonnées  
+✅ **Recherche par Image Inversée**  
+✅ **Affichage Visuel** en grille pour les médias  
+✅ **Médias Locaux** servis directement  
 ✅ **Frontend** moderne (responsive, Google-style)  
 ✅ **Admin Interface** pour gérer crawl/documents  
 ✅ **Architecture** 3-layer (Models → Services → API)  
